@@ -3,19 +3,23 @@ import fitz  # PyMuPDF
 import psycopg2
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
+import os
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
+# Load environment variables from .env file
+load_dotenv()
 
 # === PostgreSQL Config ===
-postgres = "postgres"
-password = "p@rad3%45"
-host = "ec2-3-143-162-249.us-east-2.compute.amazonaws.com"
-port = 5432
-database = "postgres"
+postgres = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+host = os.getenv("POSTGRES_HOST")
+port = int(os.getenv("POSTGRES_PORT", 5432))
+database = os.getenv("POSTGRES_DB")
 
 # === Schema and Table Details ===
-schema_name = "paradedb"
-table_name = "Test_Luis_pdf"
+schema_name = os.getenv("SCHEMA_NAME", "public")
+table_name = os.getenv("TABLE_NAME", "test_table")
 
 # === PDF Directory ===
 PDF_DIR = './Documentos'

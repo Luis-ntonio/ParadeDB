@@ -1,17 +1,21 @@
 import psycopg2
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-postgres = "postgres"
-password = "p@rad3%45"
-host = "ec2-3-143-162-249.us-east-2.compute.amazonaws.com"
-port = 5432
-database = "postgres"  # Replace with your database name
+# === PostgreSQL Config ===
+postgres = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+host = os.getenv("POSTGRES_HOST")
+port = int(os.getenv("POSTGRES_PORT", 5432))
+database = os.getenv("POSTGRES_DB")
 
-# Schema and table details
-schema_name = "paradedb"  # Replace with your schema name
-table_name = "Test_Luis_pdf"  # Replace with your table name
+# === Schema and Table Details ===
+schema_name = os.getenv("SCHEMA_NAME", "public")
+table_name = os.getenv("TABLE_NAME", "test_table")
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 # === Config ===
