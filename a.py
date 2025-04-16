@@ -47,12 +47,12 @@ def create_table():
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
         id SERIAL PRIMARY KEY,
-        filename TEXT,
-        text_content TEXT,
+        document TEXT,
+        page INTEGER,
+        chunk TEXT,
         tsv tsvector,
-        file_data BYTEA,
-        embedding vector(384),
-        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        embedding vector(1024),
+        upload_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """
 
@@ -71,13 +71,15 @@ def create_table():
         # Create tsvector GIN index
         cursor.execute(f"""
             CREATE INDEX IF NOT EXISTS idx_{table_name}_tsv
-            ON {schema_name}.{table_name} USING GIN(tsv);
+            ON {schema_name}.{table_name}
+            USING GIN(tsv);
         """)
 
         # Create pgvector index (optional, for ANN search)
         cursor.execute(f"""
             CREATE INDEX IF NOT EXISTS idx_{table_name}_embedding
-            ON {schema_name}.{table_name} USING ivfflat (embedding vector_cosine_ops)
+            ON {schema_name}.{table_name}
+            USING ivfflat (embedding vector_cosine_ops)
             WITH (lists = 100);
         """)
 
@@ -115,13 +117,13 @@ def insert_pdf_data():
 
             cur.execute(f"""
                 INSERT INTO {schema_name}.{table_name} (filename, text_content, tsv, file_data, embedding)
-                VALUES (%s, %s, to_tsvector('english', %s), %s, %s)
+                VALUES (%s, %s, to_tsvector('spanish', %s), %s, %s)
             """, (filename, text, text, psycopg2.Binary(file_data), embedding))
 
 
 # === Run ===
 create_table()
-insert_pdf_data()
+#insert_pdf_data()
 
 conn.commit()
 cur.close()

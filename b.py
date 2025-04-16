@@ -40,7 +40,7 @@ WITH bm25_ranked AS (
     FROM (
       SELECT
         id,
-        ts_rank(to_tsvector('english', text_content), plainto_tsquery(%s)) AS bm25_score
+        ts_rank(to_tsvector('spanish', text_content), plainto_tsquery(%s)) AS bm25_score
       FROM Test_Luis_pdf
       WHERE text_content @@ plainto_tsquery(%s)
       ORDER BY bm25_score DESC
