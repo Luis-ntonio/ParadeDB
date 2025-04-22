@@ -1,2 +1,6 @@
 /Documentos
 ~
+.env
+__pycache__
+
+!.env

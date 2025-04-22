@@ -1,3 +1,5 @@
+
+import boto3
 import os
 import fitz  # PyMuPDF
 import psycopg2
@@ -5,6 +7,7 @@ from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 import os
+from query_benchmark import embed_body, embed_call
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 # Load environment variables from .env file
@@ -30,11 +33,23 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
+bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
+
+
 def select_all():
-    select_query = f"SELECT document FROM {schema_name}.{table_name};"
-    cur.execute(select_query)
+        
+    select_query = f"""
+        SELECT id, RANK() OVER (ORDER BY embedding <=> %s::vector) AS rank, chunk, document
+            FROM Test_Luis_pdf
+            ORDER BY embedding <=> %s::vector
+            LIMIT 20
+    """
+    q = "¿Cuál es el Código de Cuenta Interbancario (CCI) proporcionado para el abono de pagos?"
+    e = embed_call(bedrock, q)['embedding']
+    cur.execute(select_query,(e, e))
     rows = cur.fetchall()
     for row in rows:
         print(row)
+    
 
 select_all()
