@@ -18,6 +18,10 @@ host = os.getenv("POSTGRES_HOST")
 port = int(os.getenv("POSTGRES_PORT", 5432))
 database = os.getenv("POSTGRES_DB")
 
+schema = os.getenv("SCHEMA_NAME")
+table = os.getenv("TABLE_NAME")
+
+
 def embed_body(chunk_message : str):
     return json.dumps({
         'inputText' : chunk_message,
