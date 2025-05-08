@@ -28,9 +28,9 @@ client = OpenSearch(
     http_auth = aws_auth,
     connection_class = RequestsHttpConnection,
     use_ssl = True,
-    ssl_show_warn = True, 
+    ssl_show_warn = False, 
     verify_cert = True,
-    timeout=60
+    timeout=1000
 )
 
 index_name = "document_chunks"
@@ -55,7 +55,7 @@ def embed_call(bedrock : boto3.client, chunk_message : str):
 
     return json.loads(response['body'].read().decode('utf-8'))
 
-def queries(question, bedrock, topk=5, text_boost=0.5):
+def queries(question, bedrock, topk=20, text_boost=0.15):
     query_vector = embed_call(bedrock, question)['embedding']
     query = {
                     "size": topk,
@@ -88,14 +88,15 @@ def queries(question, bedrock, topk=5, text_boost=0.5):
     
     response = client.search(
         body=query,
-        index=index_name
+        index=index_name,
+        request_timeout=10000,
     )
 
     return response
     
 if __name__ == "__main__":
-    """bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
-    with open('benchmark_less_6p.csv', 'r') as f:
+    bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
+    with open('preguntas_especificas.csv', 'r') as f:
         reader = csv.reader(f)
         questions = list(reader)[1:]
     resp_ = []
@@ -103,12 +104,12 @@ if __name__ == "__main__":
         tmp = []
         resp = queries(question[1], bedrock)
 
-        with open('benchmark_less_6p_results.csv', 'a') as f:
+        with open('benchmark_less_6p_results_especificas.csv', 'a') as f:
             writer = csv.writer(f)
             for hit in resp['hits']['hits']:
-                writer.writerow([question[0], question[1], hit['_source']['chunk'], hit['_score'], hit['_source']['document']])"""
+                writer.writerow([question[0], question[1], hit['_source']['chunk'], hit['_score'], hit['_source']['document']])
     #open benchmark_less_6p_results.csv and benchmark_less_6p.csv, group by question, and compare if document is the same
-    with open('benchmark_less_6p_results.csv', 'r') as f:
+    with open('benchmark_less_6p_results_especificas.csv', 'r') as f:
         reader = csv.reader(f)
         questions = list(reader)[1:]
     questions = [[question[0], question[1], question[4]] for question in questions]
